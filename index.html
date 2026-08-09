@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Windows 10 22H2 Mobil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #screen {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        /* Boot Screen */
+        #boot-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #start-btn {
+            background: #0078d7;
+            color: white;
+            border: none;
+            padding: 16px 36px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,120,215,0.5);
+            margin-top: 25px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #start-btn:active {
+            transform: scale(0.95);
+            background: #005a9e;
+        }
+
+        .spinner {
+            display: none;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border-left-color: #0078d7;
+            animation: spin 1s linear infinite;
+            margin-top: 25px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Desktop */
+        #desktop {
+            flex: 1;
+            width: 100%;
+            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 90px;
+            padding: 12px;
+            gap: 12px;
+            align-content: start;
+            overflow: hidden;
+        }
+
+        .desktop-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 6px;
+            border: 1px solid transparent;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .desktop-icon:active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .desktop-icon i {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+
+        .desktop-icon span {
+            font-size: 11px;
+            text-align: center;
+            line-height: 1.2;
+            word-break: break-word;
+            font-weight: 500;
+        }
+
+        /* Taskbar */
+        #taskbar {
+            width: 100%;
+            height: 50px;
+            background: rgba(16, 21, 30, 0.96);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 9000;
+            color: white;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 0 4px;
+        }
+
+        .taskbar-left {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .tb-btn {
+            width: 44px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tb-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tb-btn.active {
+            background: rgba(255, 255, 255, 0.12);
+            border-bottom: 3px solid #0078d7;
+        }
+
+        .taskbar-apps {
+            display: flex;
+            height: 100%;
+            overflow-x: auto;
+        }
+
+        .clock-widget {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 10px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Start Menu */
+        #start-menu {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            width: 100%;
+            height: 75vh;
+            max-height: 500px;
+            background: rgba(20, 25, 35, 0.98);
+            backdrop-filter: blur(25px);
+            display: none;
+            grid-template-columns: 46px 1fr;
+            z-index: 8999;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.7);
+            color: white;
+            border-top-right-radius: 12px;
+            border-top-left-radius: 12px;
+            overflow: hidden;
+        }
+
+        .start-sidebar {
+            background: rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .start-apps-list {
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .app-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .app-row:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Window Styling for Touch */
+        .win-box {
+            position: absolute;
+            background: #fff;
+            border: 1px solid #0078d7;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            width: 88vw;
+            height: 60vh;
+            max-width: 400px;
+            max-height: 520px;
+            z-index: 100;
+            border-radius: 8px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .win-header {
+            height: 42px;
+            background: #f0f3f8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 12px;
+            cursor: move;
+            border-bottom: 1px solid #ccc;
+            touch-action: none;
+        }
+
+        .win-title {
+            font-size: 13px;
+            color: #111;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .win-actions {
+            display: flex;
+            height: 100%;
+        }
+
+        .win-action-btn {
+            width: 42px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .win-action-btn.close:active {
+            background: #e81123;
+            color: white;
+        }
+
+        .win-body {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+            color: #000;
+        }
+
+        /* Edge App Styling */
+        .edge-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .edge-bar {
+            height: 44px;
+            background: #e6ecf2;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 6px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .edge-input {
+            flex: 1;
+            height: 32px;
+            border: 1px solid #bbb;
+            border-radius: 16px;
+            padding: 0 12px;
+            font-size: 12px;
+            outline: none;
+            background: #fff;
+        }
+
+        .edge-btn {
+            padding: 6px 14px;
+            background: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .edge-view {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            background: #fafafa;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .search-result-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .search-result-card h4 {
+            color: #0078d7;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .search-result-card p {
+            color: #444;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        /* Notepad App */
+        .notepad-area {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            padding: 12px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            resize: none;
+        }
+
+        /* Calculator App */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            height: calc(100% - 60px);
+            padding: 2px;
+            background: #f0f0f0;
+        }
+
+        .calc-screen {
+            height: 60px;
+            background: #f8f8f8;
+            font-size: 32px;
+            text-align: right;
+            padding: 12px;
+            font-weight: 300;
+        }
+
+        .c-btn {
+            background: #fff;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .c-btn:active { background: #ddd; }
+        .c-btn.op { background: #f2f2f2; }
+        .c-btn.eq { background: #0078d7; color: white; }
+
+        /* CMD App */
+        .cmd-box {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+            padding: 12px;
+            height: 100%;
+            font-size: 12px;
+            overflow-y: auto;
+        }
+
+        .cmd-in {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        .active-win {
+            border-color: #0078d7;
+            box-shadow: 0 12px 35px rgba(0,120,215,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen">
+
+        <!-- Boot Overlay -->
+        <div id="boot-screen">
+            <i class="fa-brands fa-windows" style="font-size: 80px; color: #0078d7; margin-bottom: 15px;"></i>
+            <h2 style="font-weight: 400; font-size: 22px;">Windows 10 Pro</h2>
+            <p style="color: #888; font-size: 13px; margin-top: 5px;">Mobil Dokunmatik Sürüm 22H2</p>
+            <button id="start-btn" onclick="bootWin()">
+                <i class="fa-brands fa-windows"></i> Windows'u Başlat
+            </button>
+            <div class="spinner" id="boot-loader"></div>
+        </div>
+
+        <!-- Desktop -->
+        <div id="desktop">
+            <div class="desktop-icon" onclick="openApp('edge')">
+                <i class="fa-brands fa-edge" style="color: #29b6f6;"></i>
+                <span>Edge</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('pc')">
+                <i class="fa-solid fa-desktop" style="color: #4ba3e3;"></i>
+                <span>Bu PC</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('notepad')">
+                <i class="fa-solid fa-file-lines" style="color: #ffca28;"></i>
+                <span>Not Defteri</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('calculator')">
+                <i class="fa-solid fa-calculator" style="color: #66bb6a;"></i>
+                <span>Hesap Mak.</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('cmd')">
+                <i class="fa-solid fa-terminal" style="color: #e0e0e0;"></i>
+                <span>CMD</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('settings')">
+                <i class="fa-solid fa-gear" style="color: #90a4ae;"></i>
+                <span>Ayarlar</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('winver')">
+                <i class="fa-solid fa-circle-info" style="color: #0078d7;"></i>
+                <span>Hakkında</span>
+            </div>
+        </div>
+
+        <!-- Start Menu -->
+        <div id="start-menu">
+            <div class="start-sidebar">
+                <i class="fa-solid fa-bars" style="font-size:18px;"></i>
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    <i class="fa-solid fa-user" style="font-size:18px;"></i>
+                    <i class="fa-solid fa-gear" style="font-size:18px;" onclick="openApp('settings')"></i>
+                    <i class="fa-solid fa-power-off" style="font-size:18px;" onclick="rebootWin()"></i>
+                </div>
+            </div>
+            <div class="start-apps-list">
+                <div class="app-row" onclick="openApp('edge')"><i class="fa-brands fa-edge" style="color:#29b6f6"></i> Microsoft Edge</div>
+                <div class="app-row" onclick="openApp('pc')"><i class="fa-solid fa-desktop" style="color:#4ba3e3"></i> Bu PC</div>
+                <div class="app-row" onclick="openApp('notepad')"><i class="fa-solid fa-file-lines" style="color:#ffca28"></i> Not Defteri</div>
+                <div class="app-row" onclick="openApp('calculator')"><i class="fa-solid fa-calculator" style="color:#66bb6a"></i> Hesap Makinesi</div>
+                <div class="app-row" onclick="openApp('cmd')"><i class="fa-solid fa-terminal"></i> Komut İstemi</div>
+                <div class="app-row" onclick="openApp('settings')"><i class="fa-solid fa-gear" style="color:#90a4ae"></i> Ayarlar (22H2)</div>
+            </div>
+        </div>
+
+        <!-- Taskbar -->
+        <div id="taskbar">
+            <div class="taskbar-left">
+                <div class="tb-btn" onclick="toggleStart()"><i class="fa-brands fa-windows"></i></div>
+                <div class="taskbar-apps" id="tb-apps"></div>
+            </div>
+            <div class="clock-widget" id="clock">
+                <span id="c-time">12:00</span>
+                <span id="c-date">09.08.2026</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let zIdx = 100;
+        let runningApps = {};
+
+        // Boot system
+        function bootWin() {
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('boot-loader').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('boot-screen').style.display = 'none';
+                startClock();
+            }, 1000);
+        }
+
+        function rebootWin() {
+            document.querySelectorAll('.win-box').forEach(w => w.remove());
+            runningApps = {};
+            document.getElementById('tb-apps').innerHTML = '';
+            document.getElementById('start-menu').style.display = 'none';
+            document.getElementById('boot-screen').style.display = 'flex';
+            document.getElementById('start-btn').style.display = 'flex';
+            document.getElementById('boot-loader').style.display = 'none';
+        }
+
+        function startClock() {
+            const update = () => {
+                const now = new Date();
+                document.getElementById('c-time').innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('c-date').innerText = now.toLocaleDateString('tr-TR');
+            };
+            update();
+            setInterval(update, 1000);
+        }
+
+        function toggleStart() {
+            const sm = document.getElementById('start-menu');
+            sm.style.display = (sm.style.display === 'grid') ? 'none' : 'grid';
+        }
+
+        // Window Management
+        function openApp(appId) {
+            document.getElementById('start-menu').style.display = 'none';
+
+            if (runningApps[appId]) {
+                const win = document.getElementById(`win-${appId}`);
+                win.style.display = 'flex';
+                bringFront(win);
+                return;
+            }
+
+            const configs = {
+                edge: { title: 'Edge Browser', icon: 'fa-edge', html: getEdgeBody() },
+                pc: { title: 'Bu PC', icon: 'fa-desktop', html: getPCBody() },
+                notepad: { title: 'Not Defteri', icon: 'fa-file-lines', html: '<textarea class="notepad-area" placeholder="Notlarınızı yazın..."></textarea>' },
+                calculator: { title: 'Hesap Makinesi', icon: 'fa-calculator', html: getCalcBody() },
+                cmd: { title: 'Komut İstemi', icon: 'fa-terminal', html: getCMDBody() },
+                settings: { title: 'Ayarlar 22H2', icon: 'fa-gear', html: getSettingsBody() },
+                winver: { title: 'Windows Hakkında', icon: 'fa-circle-info', html: getWinverBody() }
+            };
+
+            const cfg = configs[appId];
+            if (!cfg) return;
+
+            const win = document.createElement('div');
+            win.id = `win-${appId}`;
+            win.className = 'win-box active-win';
+            
+            // Mobile center positioning
+            const offset = Object.keys(runningApps).length * 15;
+            win.style.top = (40 + offset) + 'px';
+            win.style.left = (20 + offset) + 'px';
+            win.style.zIndex = ++zIdx;
+
+            win.innerHTML = `
+                <div class="win-header" id="h-${appId}">
+                    <div class="win-title">
+                        <i class="fa-solid ${cfg.icon}"></i>
+                        <span>${cfg.title}</span>
+                    </div>
+                    <div class="win-actions">
+                        <div class="win-action-btn" onclick="minApp('${appId}')"><i class="fa-solid fa-minus"></i></div>
+                        <div class="win-action-btn close" onclick="closeApp('${appId}')"><i class="fa-solid fa-xmark"></i></div>
+                    </div>
+                </div>
+                <div class="win-body">${cfg.html}</div>
+            `;
+
+            win.addEventListener('touchstart', () => bringFront(win), {passive: true});
+            win.addEventListener('mousedown', () => bringFront(win));
+            document.getElementById('screen').appendChild(win);
+
+            makeDraggableTouch(win, document.getElementById(`h-${appId}`));
+
+            runningApps[appId] = true;
+            add
